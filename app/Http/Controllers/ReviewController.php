@@ -17,25 +17,20 @@ class ReviewController extends Controller
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
             'comment' => 'nullable|string|max:1000',
-            'order_item_id' => 'nullable|integer|exists:order_items,id',
         ]);
 
-        // Cek apakah user sudah review order item ini (untuk mencegah double review dari order yang sama)
-        if ($request->order_item_id) {
-            $existing = Review::where('user_id', Auth::id())
-                ->where('product_id', $product->id)
-                ->where('order_item_id', $request->order_item_id)
-                ->first();
+        // Cek apakah user sudah review produk ini (satu user hanya bisa review satu kali per produk)
+        $existing = Review::where('user_id', Auth::id())
+            ->where('product_id', $product->id)
+            ->first();
 
-            if ($existing) {
-                return redirect()->back()->with('error', 'Anda sudah memberikan review untuk produk ini di order ini.');
-            }
+        if ($existing) {
+            return redirect()->back()->with('error', 'Anda sudah memberikan review untuk produk ini.');
         }
 
         Review::create([
             'user_id' => Auth::id(),
             'product_id' => $product->id,
-            'order_item_id' => $request->order_item_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
             'approved' => false, // pending approval dari admin

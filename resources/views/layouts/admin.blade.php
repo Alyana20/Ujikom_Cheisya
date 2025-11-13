@@ -106,7 +106,7 @@
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                     <i class="fas fa-cog mr-2"></i>Pengaturan
                                 </a>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form method="POST" action="{{ route('admin.logout') }}">
                                     @csrf
                                     <button type="submit"
                                         class="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
@@ -164,7 +164,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="#"
+                                <a href="{{ route('admin.products.index') }}"
                                     class="sidebar-item flex items-center space-x-3 py-3 px-4 rounded-lg transition duration-200 hover:bg-gray-700">
                                     <i class="fas fa-box w-5 text-center"></i>
                                     <span>Kelola Produk</span>

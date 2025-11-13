@@ -22,7 +22,7 @@
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ $product->nama }}</span>
+                        <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">{{ $product->name }}</span>
                     </div>
                 </li>
             </ol>
@@ -33,20 +33,17 @@
                 <!-- Product Image -->
                 <div class="md:w-1/2 p-8">
                     <div class="bg-gray-100 rounded-lg h-96 flex items-center justify-center overflow-hidden">
-                        @if ($product->gambar)
-                            <img src="{{ $product->gambar }}" alt="{{ $product->nama }}"
-                                class="h-full w-full object-cover rounded-lg hover:scale-105 transition-transform duration-300">
+                        @if ($product->image)
+                            @if(str_starts_with($product->image, 'http'))
+                                <img src="{{ $product->image }}" alt="{{ $product->name }}"
+                                    class="h-full w-full object-cover rounded-lg hover:scale-105 transition-transform duration-300">
+                            @else
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                    class="h-full w-full object-cover rounded-lg hover:scale-105 transition-transform duration-300">
+                            @endif
                         @else
                             <div class="text-center text-gray-400">
-                                @if ($product->kategori == 'Obat')
-                                    <i class="fas fa-pills text-6xl mb-4"></i>
-                                @elseif($product->kategori == 'Suplemen')
-                                    <i class="fas fa-capsules text-6xl mb-4"></i>
-                                @elseif($product->kategori == 'Alat Terapi')
-                                    <i class="fas fa-stethoscope text-6xl mb-4"></i>
-                                @else
-                                    <i class="fas fa-medkit text-6xl mb-4"></i>
-                                @endif
+                                <i class="fas fa-medkit text-6xl mb-4"></i>
                                 <p>Gambar tidak tersedia</p>
                             </div>
                         @endif
@@ -57,18 +54,18 @@
                 <div class="md:w-1/2 p-8">
                     <!-- Category Badge -->
                     <span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold mb-4">
-                        {{ $product->kategori }}
+                        {{ $product->category->name ?? 'Uncategorized' }}
                     </span>
 
-                    <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ $product->nama }}</h1>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ $product->name }}</h1>
 
                     <!-- Price & Stock -->
                     <div class="flex items-center mb-6">
                         <span class="text-3xl font-bold text-blue-600">Rp
-                            {{ number_format($product->harga, 0, ',', '.') }}</span>
-                        @if ($product->stok > 0)
+                            {{ number_format($product->price, 0, ',', '.') }}</span>
+                        @if ($product->stock > 0)
                             <span class="ml-4 bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full font-medium">
-                                <i class="fas fa-check-circle mr-1"></i>Stok Tersedia ({{ $product->stok }})
+                                <i class="fas fa-check-circle mr-1"></i>Tersedia
                             </span>
                         @else
                             <span class="ml-4 bg-red-100 text-red-800 text-sm px-3 py-1 rounded-full font-medium">
@@ -80,38 +77,42 @@
                     <!-- Description -->
                     <div class="mb-6">
                         <h3 class="text-lg font-semibold mb-3 text-gray-800">Deskripsi Produk</h3>
-                        <p class="text-gray-600 leading-relaxed text-lg">{{ $product->deskripsi }}</p>
+                        <p class="text-gray-600 leading-relaxed text-lg">{{ $product->description ?? 'Tidak ada deskripsi' }}</p>
                     </div>
 
                     <!-- Product Details -->
                     <div class="grid grid-cols-2 gap-4 mb-8">
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h4 class="font-semibold text-gray-700 mb-1">Kategori</h4>
-                            <p class="text-gray-600">{{ $product->kategori }}</p>
+                            <p class="text-gray-600">{{ $product->category->name ?? '-' }}</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h4 class="font-semibold text-gray-700 mb-1">Stok</h4>
-                            <p class="text-gray-600">{{ $product->stok }} unit</p>
+                            <p class="text-gray-600">{{ $product->stock }} unit</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h4 class="font-semibold text-gray-700 mb-1">Toko</h4>
-                            <p class="text-gray-600">{{ $product->store->nama }}</p>
+                            <p class="text-gray-600">{{ $product->store->name ?? '-' }}</p>
                         </div>
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <h4 class="font-semibold text-gray-700 mb-1">Status</h4>
-                            <p class="text-gray-600">{{ $product->stok > 0 ? 'Tersedia' : 'Habis' }}</p>
+                            <p class="text-gray-600">{{ $product->stock > 0 ? 'Tersedia' : 'Habis' }}</p>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex space-x-4">
                         @auth
-                            @if ($product->stok > 0)
-                                <button
-                                    class="flex-1 bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center text-lg">
-                                    <i class="fas fa-cart-plus mr-3"></i>
-                                    Tambah ke Keranjang
-                                </button>
+                            @if ($product->stock > 0)
+                                <form action="{{ route('cart.add') }}" method="POST" class="flex-1">
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center justify-center text-lg">
+                                        <i class="fas fa-cart-plus mr-3"></i>
+                                        Tambah ke Keranjang
+                                    </button>
+                                </form>
                             @else
                                 <button disabled
                                     class="flex-1 bg-gray-400 text-white py-4 px-6 rounded-lg font-semibold cursor-not-allowed text-lg">
@@ -161,30 +162,27 @@
                             class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
                             <a href="{{ route('products.show', $relatedProduct) }}">
                                 <div class="h-48 bg-gray-200 overflow-hidden">
-                                    @if ($relatedProduct->gambar)
-                                        <img src="{{ $relatedProduct->gambar }}" alt="{{ $relatedProduct->nama }}"
-                                            class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                    @if ($relatedProduct->image)
+                                        @if(str_starts_with($relatedProduct->image, 'http'))
+                                            <img src="{{ $relatedProduct->image }}" alt="{{ $relatedProduct->name }}"
+                                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                        @else
+                                            <img src="{{ asset('storage/' . $relatedProduct->image) }}" alt="{{ $relatedProduct->name }}"
+                                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                                        @endif
                                     @else
                                         <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                                            @if ($relatedProduct->kategori == 'Obat')
-                                                <i class="fas fa-pills text-gray-400 text-4xl"></i>
-                                            @elseif($relatedProduct->kategori == 'Suplemen')
-                                                <i class="fas fa-capsules text-gray-400 text-4xl"></i>
-                                            @elseif($relatedProduct->kategori == 'Alat Terapi')
-                                                <i class="fas fa-stethoscope text-gray-400 text-4xl"></i>
-                                            @else
-                                                <i class="fas fa-medkit text-gray-400 text-4xl"></i>
-                                            @endif
+                                            <i class="fas fa-medkit text-gray-400 text-4xl"></i>
                                         </div>
                                     @endif
                                 </div>
                             </a>
                             <div class="p-4">
                                 <a href="{{ route('products.show', $relatedProduct) }}" class="hover:text-blue-600 block">
-                                    <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ $relatedProduct->nama }}</h3>
+                                    <h3 class="font-semibold text-lg mb-2 line-clamp-2">{{ $relatedProduct->name }}</h3>
                                 </a>
                                 <p class="text-blue-600 font-bold text-lg mb-3">Rp
-                                    {{ number_format($relatedProduct->harga, 0, ',', '.') }}</p>
+                                    {{ number_format($relatedProduct->price, 0, ',', '.') }}</p>
                                 <a href="{{ route('products.show', $relatedProduct) }}"
                                     class="block text-center bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200">
                                     Lihat Detail

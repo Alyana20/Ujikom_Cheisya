@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -61,7 +62,7 @@ class OrderController extends Controller
         try {
             // Restore stock
             foreach ($order->items as $item) {
-                $item->product->increment('stok', $item->quantity);
+                $item->product->increment('stock', $item->quantity);
             }
 
             // Update order status
@@ -138,5 +139,27 @@ class OrderController extends Controller
         $order->load('user', 'items.product');
 
         return view('admin.orders.show', compact('order'));
+    }
+
+    /**
+     * Download invoice untuk pesanan yang sudah selesai
+     */
+    public function downloadInvoice(Order $order)
+    {
+        // Pastikan order milik user yang login
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Pastikan pesanan sudah delivered
+        if ($order->status !== 'delivered') {
+            return redirect()->back()->with('error', 'Invoice hanya tersedia untuk pesanan yang sudah terkirim.');
+        }
+
+        $order->load('user', 'items.product.store');
+
+        $pdf = Pdf::loadView('customer.orders.invoice', compact('order'));
+        
+        return $pdf->download('invoice-' . $order->id . '.pdf');
     }
 }

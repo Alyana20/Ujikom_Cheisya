@@ -16,10 +16,16 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'shipping_address',
+        'phone',
+        'notes',
         'paid_at',
         'shipped_at',
         'delivered_at',
         'cancelled_at',
+        'snap_token',
+        'midtrans_order_id',
+        'midtrans_transaction_id',
+        'midtrans_payment_type',
     ];
 
     protected $casts = [

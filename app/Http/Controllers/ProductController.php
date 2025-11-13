@@ -16,7 +16,7 @@ class ProductController extends Controller
     {
         // Ambil 8 produk terbaru untuk featured products
         $featuredProducts = Product::with('store', 'category')
-            ->where('stok', '>', 0)
+            ->where('stock', '>', 0)
             ->latest()
             ->take(8)
             ->get();
@@ -33,7 +33,7 @@ class ProductController extends Controller
     public function index(Request $request)
     {
         $query = Product::with('store', 'category')
-            ->where('stok', '>', 0);
+            ->where('stock', '>', 0);
 
         // Filter by category jika ada parameter
         if ($request->has('category') && $request->category) {
@@ -46,7 +46,7 @@ class ProductController extends Controller
 
         // Search by product name
         if ($request->has('search') && $request->search) {
-            $query->where('nama', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%' . $request->search . '%');
         }
 
         $products = $query->latest()->paginate(12);
@@ -62,7 +62,7 @@ class ProductController extends Controller
     {
         $products = Product::with('store', 'category')
             ->where('category_id', $category->id)
-            ->where('stok', '>', 0)
+            ->where('stock', '>', 0)
             ->latest()
             ->paginate(12);
 
@@ -76,23 +76,17 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        // Ambil produk related berdasarkan kategori_id (jika menggunakan model relationship)
+        // Load relationships
+        $product->load(['category', 'store']);
+        
+        // Get related products based on category
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->where('stok', '>', 0)
-            ->with('store')
+            ->where('stock', '>', 0)
+            ->where('status', 'active')
+            ->with(['store', 'category'])
             ->take(4)
             ->get();
-
-        // Fallback ke kategori string jika category_id kosong
-        if ($relatedProducts->isEmpty() && $product->kategori) {
-            $relatedProducts = Product::where('kategori', $product->kategori)
-                ->where('id', '!=', $product->id)
-                ->where('stok', '>', 0)
-                ->with('store')
-                ->take(4)
-                ->get();
-        }
 
         return view('visitor.products.show', compact('product', 'relatedProducts'));
     }

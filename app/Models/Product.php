@@ -11,17 +11,26 @@ class Product extends Model
 
     protected $fillable = [
         'store_id',
+        'category_id',
+        'name',
+        'price',
+        'description',
+        'image',
+        'stock',
+        'status',
+        // Old columns for backward compatibility
         'nama',
         'kategori',
         'harga',
         'deskripsi',
         'gambar',
         'stok',
-        'category_id',
     ];
 
     protected $casts = [
+        'price' => 'decimal:2',
         'harga' => 'decimal:2',
+        'stock' => 'integer',
         'stok' => 'integer',
     ];
 

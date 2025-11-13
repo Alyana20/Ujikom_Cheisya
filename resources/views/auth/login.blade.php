@@ -40,6 +40,24 @@
                 <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">LOGIN</h2>
                 <p class="text-center text-gray-500 mb-8">Masuk ke akun Anda</p>
 
+                <!-- Session Status -->
+                @if (session('status'))
+                    <div class="mb-4 font-medium text-sm text-green-600 bg-green-50 p-3 rounded">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <!-- Validation Errors -->
+                @if ($errors->any())
+                    <div class="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+                        <ul class="list-disc list-inside text-sm">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <form method="POST" action="{{ route('login') }}" class="space-y-6">
                     @csrf
                     <!-- User ID -->
@@ -49,7 +67,7 @@
                             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                                 <i class="fa fa-user"></i>
                             </span>
-                            <input id="email" name="email" type="email" required autofocus
+                            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
                                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
                                 placeholder="admin@gmail.com">
                         </div>
@@ -67,7 +85,7 @@
                                 placeholder="••••••••">
                             <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 cursor-pointer"
                                 onclick="togglePassword()">
-                                <i class="fa fa-eye"></i>
+                                <i class="fa fa-eye" id="toggleIcon"></i>
                             </span>
                         </div>
                     </div>
@@ -75,11 +93,13 @@
                     <!-- Remember Me -->
                     <div class="flex justify-between items-center text-sm">
                         <label class="flex items-center space-x-2">
-                            <input type="checkbox"
+                            <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}
                                 class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                             <span>Ingat saya</span>
                         </label>
-                        <a href="#" class="text-indigo-600 hover:text-indigo-800">Lupa Password?</a>
+                        @if (Route::has('password.request'))
+                            <a href="{{ route('password.request') }}" class="text-indigo-600 hover:text-indigo-800">Lupa Password?</a>
+                        @endif
                     </div>
 
                     <!-- Button -->
@@ -103,7 +123,16 @@
     <script>
         function togglePassword() {
             const input = document.getElementById('password');
-            input.type = input.type === 'password' ? 'text' : 'password';
+            const icon = document.getElementById('toggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
         }
     </script>
 </x-guest-layout>

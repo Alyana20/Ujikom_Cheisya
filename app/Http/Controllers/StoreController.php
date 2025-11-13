@@ -11,22 +11,27 @@ class StoreController extends Controller
     // Vendor membuat store
     public function create()
     {
-        return view('vendor.store.create');
+        // Check if user already has a store
+        $store = Store::where('user_id', Auth::id())->first();
+        
+        return view('vendor.store.create', compact('store'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'address' => 'nullable|string',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:500',
+            'description' => 'nullable|string|max:1000',
         ]);
 
         Store::create([
             'user_id' => Auth::id(),
             'name' => $request->name,
-            'description' => $request->description,
+            'phone' => $request->phone,
             'address' => $request->address,
+            'description' => $request->description,
             'status' => 'pending',
         ]);
 

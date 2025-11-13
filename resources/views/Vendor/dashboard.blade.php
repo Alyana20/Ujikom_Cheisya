@@ -57,7 +57,7 @@
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
             color: white;
             padding: 30px;
-            text-align: center;
+            position: relative;
         }
 
         .welcome-section {
@@ -66,6 +66,36 @@
             justify-content: center;
             gap: 20px;
             margin-bottom: 15px;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logout-btn i {
+            font-size: 16px;
         }
 
         .user-avatar {
@@ -260,10 +290,6 @@
             color: white;
         }
 
-        .action-card.store .action-icon {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
-        }
-
         .action-card.products .action-icon {
             background: linear-gradient(135deg, var(--secondary-color) 0%, #4caf50 100%);
         }
@@ -414,6 +440,12 @@
                 text-align: center;
             }
 
+            .logout-btn {
+                position: static;
+                margin: 15px auto 0;
+                width: fit-content;
+            }
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -449,6 +481,11 @@
             .welcome-text h1 {
                 font-size: 24px;
             }
+
+            .logout-btn {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
@@ -463,12 +500,21 @@
         <div class="dashboard-card">
             <!-- Header -->
             <div class="dashboard-header">
+                <!-- Logout Button -->
+                <form action="{{ route('vendor.logout') }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="logout-btn" onclick="return confirm('Apakah Anda yakin ingin logout?')">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </form>
+
                 <div class="welcome-section">
                     <div class="user-avatar">
                         <i class="fas fa-user-tie"></i>
                     </div>
                     <div class="welcome-text">
-                        <h1>Selamat datang, Vendor Toko Alert!</h1>
+                        <h1>Selamat datang, {{ Auth::user()->name }}!</h1>
                         <p>Kelola toko dan produk Anda dengan mudah</p>
                         <div class="vendor-badge">
                             <i class="fas fa-store"></i> Status: Aktif
@@ -517,18 +563,7 @@
                         Aksi Cepat
                     </h2>
                     <div class="actions-grid">
-                        <a href="{{ route('vendor.store.create') }}" class="action-card store">
-                            <div class="action-icon">
-                                <i class="fas fa-store"></i>
-                            </div>
-                            <div class="action-title">Buat / Kelola Toko</div>
-                            <div class="action-description">
-                                Kelola informasi toko Anda dan atur profil penjual
-                            </div>
-                        </a>
-
-                        <div class="action-card products disabled">
-                            <div class="coming-soon">COMING SOON</div>
+                        <a href="{{ route('vendor.products.index') }}" class="action-card products">
                             <div class="action-icon">
                                 <i class="fas fa-boxes"></i>
                             </div>
@@ -536,10 +571,9 @@
                             <div class="action-description">
                                 Tambah, edit, dan kelola katalog produk Anda
                             </div>
-                        </div>
+                        </a>
 
-                        <div class="action-card orders disabled">
-                            <div class="coming-soon">COMING SOON</div>
+                        <a href="{{ route('vendor.orders.index') }}" class="action-card orders">
                             <div class="action-icon">
                                 <i class="fas fa-clipboard-list"></i>
                             </div>
@@ -547,15 +581,15 @@
                             <div class="action-description">
                                 Kelola pesanan dan proses pengiriman produk
                             </div>
-                        </div>
+                        </a>
 
-                        <a href="#" class="action-card settings">
+                        <a href="{{ route('vendor.profile.index') }}" class="action-card settings">
                             <div class="action-icon">
-                                <i class="fas fa-cogs"></i>
+                                <i class="fas fa-user-circle"></i>
                             </div>
-                            <div class="action-title">Pengaturan Akun</div>
+                            <div class="action-title">Profil Vendor</div>
                             <div class="action-description">
-                                Kelola profil dan pengaturan akun vendor Anda
+                                Kelola profil personal dan informasi toko Anda
                             </div>
                         </a>
                     </div>
@@ -595,6 +629,15 @@
                                 <div class="activity-time">-</div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Footer -->
+                <div style="margin-top: 40px; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); text-align: center;">
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <a href="{{ route('vendor.profile.index') }}" style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%); color: white; padding: 12px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s;">
+                            <i class="fas fa-user-circle"></i> Profil Vendor
+                        </a>
                     </div>
                 </div>
             </div>

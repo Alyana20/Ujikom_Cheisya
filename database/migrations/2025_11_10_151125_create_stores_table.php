@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // relasi ke users
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('phone', 20)->nullable(); // nomor telepon toko
             $table->string('address')->nullable();
             $table->string('status')->default('pending'); // pending | approved | rejected
             $table->timestamps();

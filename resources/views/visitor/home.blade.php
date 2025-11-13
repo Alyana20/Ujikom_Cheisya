@@ -89,20 +89,17 @@
                             <!-- Product Image -->
                             <a href="{{ route('products.show', $product) }}" class="block">
                                 <div class="h-48 bg-gray-200 overflow-hidden">
-                                    @if ($product->gambar)
-                                        <img src="{{ $product->gambar }}" alt="{{ $product->nama }}"
-                                            class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                    @if ($product->image)
+                                        @if(str_starts_with($product->image, 'http'))
+                                            <img src="{{ $product->image }}" alt="{{ $product->name }}"
+                                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                        @else
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-500">
+                                        @endif
                                     @else
                                         <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                                            @if ($product->kategori == 'Obat')
-                                                <i class="fas fa-pills text-gray-400 text-4xl"></i>
-                                            @elseif($product->kategori == 'Suplemen')
-                                                <i class="fas fa-capsules text-gray-400 text-4xl"></i>
-                                            @elseif($product->kategori == 'Alat Terapi')
-                                                <i class="fas fa-stethoscope text-gray-400 text-4xl"></i>
-                                            @else
-                                                <i class="fas fa-medkit text-gray-400 text-4xl"></i>
-                                            @endif
+                                            <i class="fas fa-medkit text-gray-400 text-4xl"></i>
                                         </div>
                                     @endif
                                 </div>
@@ -113,19 +110,19 @@
                                 <!-- Category Badge -->
                                 <span
                                     class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold mb-3">
-                                    {{ $product->kategori }}
+                                    {{ $product->category->name ?? 'Produk' }}
                                 </span>
 
                                 <!-- Product Name -->
                                 <a href="{{ route('products.show', $product) }}" class="hover:text-blue-600 block mb-2">
-                                    <h3 class="font-semibold text-lg line-clamp-2">{{ $product->nama }}</h3>
+                                    <h3 class="font-semibold text-lg line-clamp-2">{{ $product->name }}</h3>
                                 </a>
 
                                 <!-- Price -->
                                 <div class="flex items-center justify-between mb-4">
                                     <span class="text-blue-600 font-bold text-xl">Rp
-                                        {{ number_format($product->harga, 0, ',', '.') }}</span>
-                                    @if ($product->stok > 0)
+                                        {{ number_format($product->price, 0, ',', '.') }}</span>
+                                    @if ($product->stock > 0)
                                         <span class="text-green-600 text-sm font-medium">
                                             <i class="fas fa-check-circle"></i> Tersedia
                                         </span>
@@ -144,7 +141,7 @@
                                     </a>
 
                                     @auth
-                                        @if ($product->stok > 0)
+                                        @if ($product->stock > 0)
                                             <button
                                                 class="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-semibold hover:bg-green-700 transition duration-200">
                                                 <i class="fas fa-cart-plus"></i>
@@ -173,6 +170,152 @@
                     <p class="text-gray-500 mt-2">Produk akan segera tersedia</p>
                 </div>
             @endif
+        </div>
+    </section>
+
+    <!-- Become Vendor Section -->
+    <section class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Left: Information -->
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">
+                        <i class="fas fa-store mr-3"></i>
+                        Ingin Jadi Vendor?
+                    </h2>
+                    <p class="text-lg mb-6 text-purple-100">
+                        Bergabunglah dengan ribuan vendor sukses di platform kami dan jangkau jutaan pelanggan di seluruh Indonesia!
+                    </p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-white bg-opacity-20 p-2 rounded-lg mt-1">
+                                <i class="fas fa-check text-green-300"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg">Gratis Pendaftaran</h3>
+                                <p class="text-purple-100">Tanpa biaya setup, mulai jualan hari ini juga</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-white bg-opacity-20 p-2 rounded-lg mt-1">
+                                <i class="fas fa-chart-line text-green-300"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg">Peluang Besar</h3>
+                                <p class="text-purple-100">Akses ke ribuan customer potensial</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-white bg-opacity-20 p-2 rounded-lg mt-1">
+                                <i class="fas fa-headset text-green-300"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-lg">Dukungan Penuh</h3>
+                                <p class="text-purple-100">Tim support siap membantu 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: CTA -->
+                <div class="bg-white rounded-2xl p-8 text-gray-800 shadow-2xl">
+                    <h3 class="text-2xl font-bold mb-4 text-center">Daftar Sekarang</h3>
+                    
+                    @auth
+                        @php
+                            $shopRequest = Auth::user()->shopRequest;
+                        @endphp
+                        
+                        @if($shopRequest)
+                            <!-- Already have shop request -->
+                            <div class="text-center py-4">
+                                @if($shopRequest->status === 'pending')
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                                        <i class="fas fa-clock text-yellow-600 text-3xl mb-2"></i>
+                                        <h4 class="font-semibold text-yellow-800 mb-2">Menunggu Persetujuan</h4>
+                                        <p class="text-sm text-yellow-700">
+                                            Pengajuan Anda sedang dalam proses review oleh admin.
+                                        </p>
+                                    </div>
+                                @elseif($shopRequest->status === 'approved')
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                                        <i class="fas fa-check-circle text-green-600 text-3xl mb-2"></i>
+                                        <h4 class="font-semibold text-green-800 mb-2">Sudah Disetujui</h4>
+                                        <p class="text-sm text-green-700 mb-3">
+                                            Anda sudah terdaftar sebagai vendor!
+                                        </p>
+                                        <a href="{{ route('vendor.dashboard') }}" 
+                                           class="inline-block bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                                            <i class="fas fa-tachometer-alt mr-2"></i>
+                                            Dashboard Vendor
+                                        </a>
+                                    </div>
+                                @elseif($shopRequest->status === 'rejected')
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                                        <i class="fas fa-times-circle text-red-600 text-3xl mb-2"></i>
+                                        <h4 class="font-semibold text-red-800 mb-2">Ditolak</h4>
+                                        <p class="text-sm text-red-700 mb-2">
+                                            {{ $shopRequest->rejection_reason ?? 'Pengajuan Anda ditolak.' }}
+                                        </p>
+                                        <a href="{{ route('shop-request.edit') }}" 
+                                           class="inline-block bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition text-sm">
+                                            <i class="fas fa-edit mr-2"></i>
+                                            Ajukan Ulang
+                                        </a>
+                                    </div>
+                                @endif
+                                
+                                <a href="{{ route('shop-request.show') }}" 
+                                   class="text-purple-600 hover:text-purple-800 font-medium text-sm">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Lihat Detail Pengajuan
+                                </a>
+                            </div>
+                        @else
+                            <!-- No shop request yet -->
+                            <p class="text-gray-600 mb-6 text-center">
+                                Lengkapi data toko Anda dan mulai berjualan hari ini!
+                            </p>
+                            
+                            <a href="{{ route('shop-request.create') }}" 
+                               class="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition transform hover:scale-105 active:scale-95 shadow-lg text-center">
+                                <i class="fas fa-rocket mr-2"></i>
+                                Daftar Jadi Vendor
+                            </a>
+                            
+                            <div class="mt-4 text-center text-sm text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Proses persetujuan 1-2 hari kerja
+                            </div>
+                        @endif
+                    @else
+                        <!-- Not logged in -->
+                        <div class="text-center py-4">
+                            <p class="text-gray-600 mb-6">
+                                Silakan login terlebih dahulu untuk mendaftar sebagai vendor.
+                            </p>
+                            
+                            <div class="space-y-3">
+                                <a href="{{ route('vendor.login') }}" 
+                                   class="block w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition shadow-lg">
+                                    <i class="fas fa-sign-in-alt mr-2"></i>
+                                    Login untuk Daftar
+                                </a>
+                                
+                                <div class="text-sm text-gray-500">
+                                    Belum punya akun?
+                                    <a href="{{ route('vendor.register') }}" class="text-purple-600 hover:text-purple-800 font-semibold">
+                                        Daftar di sini
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endauth
+                </div>
+            </div>
         </div>
     </section>
 

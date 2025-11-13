@@ -176,6 +176,7 @@
             top: 50%;
             transform: translateY(-50%);
             color: #666;
+            z-index: 1;
         }
 
         input[type="email"],
@@ -190,11 +191,19 @@
             border-radius: 10px;
             font-size: 14px;
             transition: all 0.3s;
+            background: white;
         }
 
         select {
             appearance: none;
-            background: white;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+            padding-right: 45px;
+        }
+
+        select option {
+            padding: 10px;
         }
 
         .select-arrow {
@@ -204,6 +213,7 @@
             transform: translateY(-50%);
             color: #666;
             pointer-events: none;
+            z-index: 1;
         }
 
         input:focus,
@@ -211,6 +221,13 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
             outline: none;
+        }
+
+        small {
+            display: block;
+            margin-top: 5px;
+            font-size: 12px;
+            color: #666;
         }
 
         .form-options {
@@ -516,19 +533,45 @@
                     <h2 class="auth-title">FORM REGISTRASI</h2>
                     <p class="auth-subtitle">Bergabung dengan Toko Alert Kesehatan</p>
 
-                    <form method="POST" action="{{ route('register') }}">
+                    <!-- Display Validation Errors -->
+                    @if ($errors->any())
+                        <div style="background: #fee; border: 1px solid #fcc; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <p style="color: #c33; font-weight: bold; margin-bottom: 10px;">⚠️ Terjadi kesalahan:</p>
+                            <ul style="color: #c33; margin: 0; padding-left: 20px;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('register') }}" id="registerFormGuest">
                         @csrf
 
-                        <!-- Username -->
+                        <!-- Name (bukan username!) -->
                         <div class="form-group">
                             <div class="input-with-icon">
                                 <i class="fas fa-user"></i>
-                                <input id="username" type="text" name="username" value="{{ old('username') }}"
-                                    required autofocus placeholder="Username">
+                                <input id="name" type="text" name="name" value="{{ old('name') }}"
+                                    required autofocus placeholder="Nama Lengkap" minlength="3" maxlength="255">
                             </div>
-                            @if ($errors->has('username'))
+                            @if ($errors->has('name'))
                                 <div class="error-message">
-                                    {{ $errors->first('username') }}
+                                    {{ $errors->first('name') }}
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope"></i>
+                                <input id="email" type="email" name="email" value="{{ old('email') }}"
+                                    required placeholder="contoh@email.com">
+                            </div>
+                            @if ($errors->has('email'))
+                                <div class="error-message">
+                                    {{ $errors->first('email') }}
                                 </div>
                             @endif
                         </div>
@@ -538,8 +581,8 @@
                             <div class="form-group">
                                 <div class="input-with-icon">
                                     <i class="fas fa-lock"></i>
-                                    <input id="password" type="password" name="password" required
-                                        autocomplete="new-password" placeholder="Password">
+                                    <input id="password_reg" type="password" name="password" required
+                                        autocomplete="new-password" placeholder="Password (min 8 karakter)" minlength="8">
                                 </div>
                                 @if ($errors->has('password'))
                                     <div class="error-message">
@@ -552,69 +595,77 @@
                             <div class="form-group">
                                 <div class="input-with-icon">
                                     <i class="fas fa-lock"></i>
-                                    <input id="password_confirmation" type="password" name="password_confirmation"
-                                        required autocomplete="new-password" placeholder="Retype Password">
+                                    <input id="password_confirmation_reg" type="password" name="password_confirmation"
+                                        required autocomplete="new-password" placeholder="Konfirmasi Password" minlength="8">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Email -->
+                        <!-- Password Match Indicator -->
+                        <div id="password-match-indicator" style="margin-top: -10px; margin-bottom: 15px; font-size: 13px;"></div>
+
+                        <!-- Informasi Tambahan (Opsional) -->
+                        <div style="margin: 25px 0 15px; padding-top: 15px; border-top: 2px dashed #ddd;">
+                            <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+                                <i class="fas fa-info-circle"></i> <strong>Informasi Tambahan</strong> <span style="font-size: 12px; color: #999;">(Opsional)</span>
+                            </p>
+                        </div>
+
+                        <!-- Phone Number -->
                         <div class="form-group">
                             <div class="input-with-icon">
-                                <i class="fas fa-envelope"></i>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}"
-                                    required autocomplete="username" placeholder="E-mail">
+                                <i class="fas fa-phone"></i>
+                                <input id="phone" type="tel" name="phone" value="{{ old('phone') }}"
+                                    placeholder="Nomor Telepon (contoh: 081234567890)" pattern="[0-9]{10,13}">
                             </div>
-                            @if ($errors->has('email'))
+                            <small style="color: #666; font-size: 12px;">Format: 10-13 digit angka</small>
+                            @if ($errors->has('phone'))
                                 <div class="error-message">
-                                    {{ $errors->first('email') }}
+                                    {{ $errors->first('phone') }}
                                 </div>
                             @endif
                         </div>
 
-                        <!-- Date of Birth -->
-                        <div class="form-group">
-                            <div class="input-with-icon">
-                                <i class="fas fa-calendar"></i>
-                                <input id="date_of_birth" type="date" name="date_of_birth"
-                                    value="{{ old('date_of_birth') }}" required>
-                                <i class="fas fa-chevron-down select-arrow"></i>
-                            </div>
-                            @if ($errors->has('date_of_birth'))
-                                <div class="error-message">
-                                    {{ $errors->first('date_of_birth') }}
+                        <div class="form-row">
+                            <!-- Date of Birth -->
+                            <div class="form-group">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-calendar"></i>
+                                    <input id="date_of_birth" type="date" name="date_of_birth" value="{{ old('date_of_birth') }}"
+                                        placeholder="Tanggal Lahir">
                                 </div>
-                            @endif
-                        </div>
+                                @if ($errors->has('date_of_birth'))
+                                    <div class="error-message">
+                                        {{ $errors->first('date_of_birth') }}
+                                    </div>
+                                @endif
+                            </div>
 
-                        <!-- Gender -->
-                        <div class="form-group">
-                            <label>Gender:</label>
-                            <div class="gender-options">
-                                <div class="gender-option">
-                                    <input type="radio" id="male" name="gender" value="male"
-                                        {{ old('gender') == 'male' ? 'checked' : '' }} required>
-                                    <label for="male">Male</label>
+                            <!-- Gender -->
+                            <div class="form-group">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-venus-mars"></i>
+                                    <select id="gender" name="gender">
+                                        <option value="">Pilih Jenis Kelamin</option>
+                                        <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>Laki-laki</option>
+                                        <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>Perempuan</option>
+                                    </select>
+                                    <i class="fas fa-chevron-down select-arrow"></i>
                                 </div>
-                                <div class="gender-option">
-                                    <input type="radio" id="female" name="gender" value="female"
-                                        {{ old('gender') == 'female' ? 'checked' : '' }} required>
-                                    <label for="female">Female</label>
-                                </div>
+                                @if ($errors->has('gender'))
+                                    <div class="error-message">
+                                        {{ $errors->first('gender') }}
+                                    </div>
+                                @endif
                             </div>
-                            @if ($errors->has('gender'))
-                                <div class="error-message">
-                                    {{ $errors->first('gender') }}
-                                </div>
-                            @endif
                         </div>
 
                         <!-- Address -->
                         <div class="form-group">
                             <div class="input-with-icon">
-                                <i class="fas fa-home"></i>
+                                <i class="fas fa-map-marker-alt"></i>
                                 <input id="address" type="text" name="address" value="{{ old('address') }}"
-                                    required placeholder="Address">
+                                    placeholder="Alamat Lengkap" maxlength="255">
                             </div>
                             @if ($errors->has('address'))
                                 <div class="error-message">
@@ -623,69 +674,93 @@
                             @endif
                         </div>
 
-                        <!-- City -->
-                        <div class="form-group">
-                            <div class="input-with-icon">
-                                <i class="fas fa-city"></i>
-                                <select id="city" name="city" required>
-                                    <option value="">Pilih Kota</option>
-                                    <option value="jakarta" {{ old('city') == 'jakarta' ? 'selected' : '' }}>Jakarta
-                                    </option>
-                                    <option value="surabaya" {{ old('city') == 'surabaya' ? 'selected' : '' }}>
-                                        Surabaya</option>
-                                    <option value="bandung" {{ old('city') == 'bandung' ? 'selected' : '' }}>Bandung
-                                    </option>
-                                    <option value="medan" {{ old('city') == 'medan' ? 'selected' : '' }}>Medan
-                                    </option>
-                                    <option value="semarang" {{ old('city') == 'semarang' ? 'selected' : '' }}>
-                                        Semarang</option>
-                                </select>
-                                <i class="fas fa-chevron-down select-arrow"></i>
-                            </div>
-                            @if ($errors->has('city'))
-                                <div class="error-message">
-                                    {{ $errors->first('city') }}
+                        <div class="form-row">
+                            <!-- City -->
+                            <div class="form-group">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-city"></i>
+                                    <input id="city" type="text" name="city" value="{{ old('city') }}"
+                                        placeholder="Kota" maxlength="100">
                                 </div>
-                            @endif
-                        </div>
+                                @if ($errors->has('city'))
+                                    <div class="error-message">
+                                        {{ $errors->first('city') }}
+                                    </div>
+                                @endif
+                            </div>
 
-                        <!-- Contact No -->
-                        <div class="form-group">
-                            <div class="input-with-icon">
-                                <i class="fas fa-phone"></i>
-                                <input id="contact_no" type="tel" name="contact_no"
-                                    value="{{ old('contact_no') }}" required placeholder="Contact no">
-                            </div>
-                            @if ($errors->has('contact_no'))
-                                <div class="error-message">
-                                    {{ $errors->first('contact_no') }}
+                            <!-- Postal Code -->
+                            <div class="form-group">
+                                <div class="input-with-icon">
+                                    <i class="fas fa-mail-bulk"></i>
+                                    <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code') }}"
+                                        placeholder="Kode Pos" pattern="[0-9]{5}" maxlength="5">
                                 </div>
-                            @endif
-                        </div>
-
-                        <!-- PayPal ID -->
-                        <div class="form-group">
-                            <div class="input-with-icon">
-                                <i class="fab fa-paypal"></i>
-                                <input id="paypal_id" type="text" name="paypal_id"
-                                    value="{{ old('paypal_id') }}" placeholder="Pay-pal id">
+                                <small style="color: #666; font-size: 12px;">5 digit angka</small>
+                                @if ($errors->has('postal_code'))
+                                    <div class="error-message">
+                                        {{ $errors->first('postal_code') }}
+                                    </div>
+                                @endif
                             </div>
-                            @if ($errors->has('paypal_id'))
-                                <div class="error-message">
-                                    {{ $errors->first('paypal_id') }}
-                                </div>
-                            @endif
                         </div>
 
                         <div class="form-row">
-                            <button type="submit" class="auth-btn">
-                                Submit
+                            <button type="submit" class="auth-btn" id="registerSubmitBtn">
+                                <span id="registerBtnText">Submit</span>
+                                <span id="registerBtnLoading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i> Mendaftar...
+                                </span>
                             </button>
                             <button type="reset" class="auth-btn" style="background: #6c757d;">
                                 Clear
                             </button>
                         </div>
                     </form>
+
+                    <script>
+                        // Password match validation
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const password = document.getElementById('password_reg');
+                            const passwordConfirmation = document.getElementById('password_confirmation_reg');
+                            const matchIndicator = document.getElementById('password-match-indicator');
+                            const registerForm = document.getElementById('registerFormGuest');
+                            const submitBtn = document.getElementById('registerSubmitBtn');
+                            const btnText = document.getElementById('registerBtnText');
+                            const btnLoading = document.getElementById('registerBtnLoading');
+
+                            if (passwordConfirmation && password) {
+                                passwordConfirmation.addEventListener('input', function() {
+                                    if (this.value === '') {
+                                        matchIndicator.textContent = '';
+                                    } else if (password.value === this.value) {
+                                        matchIndicator.innerHTML = '<span style="color: #28a745;">✓ Password cocok</span>';
+                                    } else {
+                                        matchIndicator.innerHTML = '<span style="color: #dc3545;">✗ Password tidak cocok</span>';
+                                    }
+                                });
+
+                                // Form submission
+                                registerForm.addEventListener('submit', function(e) {
+                                    if (password.value !== passwordConfirmation.value) {
+                                        e.preventDefault();
+                                        alert('Password dan Konfirmasi Password tidak cocok!');
+                                        return false;
+                                    }
+
+                                    // Show loading
+                                    submitBtn.disabled = true;
+                                    btnText.style.display = 'none';
+                                    btnLoading.style.display = 'inline';
+
+                                    console.log('Registering with:', {
+                                        name: document.getElementById('name').value,
+                                        email: document.getElementById('email').value
+                                    });
+                                });
+                            }
+                        });
+                    </script>
 
                     <div class="auth-switch">
                         Sudah punya akun? <a href="#" class="switch-to-login">Login Sekarang</a>
@@ -779,8 +854,9 @@
                 link.addEventListener('click', showLogin);
             });
 
-            // Show register form if there are register errors
+            // Show register form if route is register or if there are register errors
             @if (
+                Route::currentRouteName() == 'register' ||
                 $errors->has('username') ||
                     $errors->has('date_of_birth') ||
                     $errors->has('gender') ||
