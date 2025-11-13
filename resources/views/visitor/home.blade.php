@@ -53,16 +53,35 @@
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="text-3xl font-bold text-center mb-12">Kategori Produk</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                @foreach ([['icon' => 'fas fa-pills', 'name' => 'Obat', 'color' => 'blue'], ['icon' => 'fas fa-capsules', 'name' => 'Suplemen', 'color' => 'green'], ['icon' => 'fas fa-stethoscope', 'name' => 'Alat Terapi', 'color' => 'purple'], ['icon' => 'fas fa-medkit', 'name' => 'Peralatan Medis', 'color' => 'red']] as $category)
-                    <a href="{{ route('products.index') }}?category={{ $category['name'] }}"
+                @php
+                    $colors = ['blue', 'green', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+                @endphp
+                @forelse ($categories as $category)
+                    @php
+                        $colorIndex = $loop->index % count($colors);
+                        $color = $colors[$colorIndex];
+                    @endphp
+                    <a href="{{ route('products.byCategory', $category->slug) }}"
                         class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300 hover:transform hover:-translate-y-1">
-                        <div
-                            class="bg-{{ $category['color'] }}-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="{{ $category['icon'] }} text-{{ $category['color'] }}-600 text-3xl"></i>
+                        <div class="bg-{{ $color }}-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            @if($category->icon && mb_strlen($category->icon) <= 2)
+                                {{-- Emoji icon --}}
+                                <span class="text-4xl">{{ $category->icon }}</span>
+                            @else
+                                {{-- FontAwesome icon or default --}}
+                                <i class="{{ $category->icon ?? 'fas fa-tag' }} text-{{ $color }}-600 text-3xl"></i>
+                            @endif
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800">{{ $category['name'] }}</h3>
+                        <h3 class="text-lg font-semibold text-gray-800">{{ $category->name }}</h3>
+                        @if($category->products_count > 0)
+                            <p class="text-sm text-gray-500 mt-1">{{ $category->products_count }} produk</p>
+                        @endif
                     </a>
-                @endforeach
+                @empty
+                    <div class="col-span-full text-center py-8">
+                        <p class="text-gray-500">Belum ada kategori dengan produk tersedia</p>
+                    </div>
+                @endforelse
             </div>
         </div>
     </section>

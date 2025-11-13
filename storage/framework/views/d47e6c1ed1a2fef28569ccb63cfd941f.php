@@ -51,16 +51,35 @@
         <div class="max-w-7xl mx-auto px-4">
             <h2 class="text-3xl font-bold text-center mb-12">Kategori Produk</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <?php $__currentLoopData = [['icon' => 'fas fa-pills', 'name' => 'Obat', 'color' => 'blue'], ['icon' => 'fas fa-capsules', 'name' => 'Suplemen', 'color' => 'green'], ['icon' => 'fas fa-stethoscope', 'name' => 'Alat Terapi', 'color' => 'purple'], ['icon' => 'fas fa-medkit', 'name' => 'Peralatan Medis', 'color' => 'red']]; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <a href="<?php echo e(route('products.index')); ?>?category=<?php echo e($category['name']); ?>"
+                <?php
+                    $colors = ['blue', 'green', 'purple', 'red', 'yellow', 'pink', 'indigo', 'teal'];
+                ?>
+                <?php $__empty_1 = true; $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <?php
+                        $colorIndex = $loop->index % count($colors);
+                        $color = $colors[$colorIndex];
+                    ?>
+                    <a href="<?php echo e(route('products.byCategory', $category->slug)); ?>"
                         class="bg-white rounded-xl shadow-md p-6 text-center hover:shadow-lg transition-shadow duration-300 hover:transform hover:-translate-y-1">
-                        <div
-                            class="bg-<?php echo e($category['color']); ?>-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="<?php echo e($category['icon']); ?> text-<?php echo e($category['color']); ?>-600 text-3xl"></i>
+                        <div class="bg-<?php echo e($color); ?>-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <?php if($category->icon && mb_strlen($category->icon) <= 2): ?>
+                                
+                                <span class="text-4xl"><?php echo e($category->icon); ?></span>
+                            <?php else: ?>
+                                
+                                <i class="<?php echo e($category->icon ?? 'fas fa-tag'); ?> text-<?php echo e($color); ?>-600 text-3xl"></i>
+                            <?php endif; ?>
                         </div>
-                        <h3 class="text-lg font-semibold text-gray-800"><?php echo e($category['name']); ?></h3>
+                        <h3 class="text-lg font-semibold text-gray-800"><?php echo e($category->name); ?></h3>
+                        <?php if($category->products_count > 0): ?>
+                            <p class="text-sm text-gray-500 mt-1"><?php echo e($category->products_count); ?> produk</p>
+                        <?php endif; ?>
                     </a>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <div class="col-span-full text-center py-8">
+                        <p class="text-gray-500">Belum ada kategori dengan produk tersedia</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>
