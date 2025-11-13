@@ -65,14 +65,8 @@
                 </div>
             </div>
 
-            <!-- Role -->
-            <div class="mt-4">
-                <x-input-label for="role" :value="__('Daftar Sebagai')" />
-                <select id="role" name="role" class="block mt-1 w-full border-gray-300 rounded-md shadow-sm">
-                    <option value="customer">Customer</option>
-                    <option value="vendor">Vendor</option>
-                </select>
-            </div>
+            <!-- Role is fixed to customer for visitor registration -->
+            <input type="hidden" name="role" value="customer">
 
 
             <div class="flex justify-center gap-4 mt-6">

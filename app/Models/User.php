@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -22,13 +23,15 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    /**
+     * The attributes that should be cast.
+     *
+     * Note: do not use the 'hashed' cast here because the registration
+     * controller already hashes passwords explicitly using Hash::make.
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
 
     // Helper methods untuk check role
     public function isAdmin()
@@ -48,6 +51,31 @@ class User extends Authenticatable
 
     public function store()
     {
-        return $this->hasOne(Store::class);
+        return $this->hasOne(\App\Models\Store::class, 'user_id');
+    }
+
+    public function shopRequest()
+    {
+        return $this->hasOne(\App\Models\ShopRequest::class, 'user_id');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(\App\Models\Order::class, 'user_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class, 'user_id');
+    }
+
+    /**
+     * Email normalization mutator
+     * @param string $value
+     * @phpstan-ignore-next-line
+     */
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = Str::lower(trim($value));
     }
 }

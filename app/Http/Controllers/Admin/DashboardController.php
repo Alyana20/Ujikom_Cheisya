@@ -13,14 +13,13 @@ class DashboardController extends Controller
     public function index()
     {
         $stats = [
+            'total_users' => User::count(),
             'total_vendors' => User::where('role', 'vendor')->count(),
             'total_customers' => User::where('role', 'customer')->count(),
+            'total_stores' => Store::count(),
             'pending_stores' => Store::where('status', 'pending')->count(),
-            'total_products' => 0, // Nanti diganti jika sudah ada model Product
-            'pending_store_requests' => Store::with('user')
-                ->where('status', 'pending')
-                ->latest()
-                ->get()
+            'approved_stores' => Store::where('status', 'approved')->count(),
+            'total_products' => \App\Models\Product::count(),
         ];
 
         return view('admin.dashboard', compact('stats'));

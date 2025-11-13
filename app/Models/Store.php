@@ -10,14 +10,15 @@ class Store extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nama',
-        'alamat',
-        'pemilik'
+        'user_id',
+        'name',
+        'description',
+        'address',
+        'status',
     ];
 
-    // Relasi ke Product
-    public function products()
+    public function user()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(User::class);
     }
 }

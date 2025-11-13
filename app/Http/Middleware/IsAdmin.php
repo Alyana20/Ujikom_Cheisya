@@ -21,5 +21,7 @@ class IsAdmin
 
         // Kalau bukan admin, tampilkan error 403
         abort(403, 'Unauthorized access.');
+
+        return response('Unauthorized', 403);
     }
 }

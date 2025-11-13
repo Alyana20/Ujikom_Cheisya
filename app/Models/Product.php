@@ -16,11 +16,37 @@ class Product extends Model
         'harga',
         'deskripsi',
         'gambar',
-        'stok'
+        'stok',
+        'category_id',
+    ];
+
+    protected $casts = [
+        'harga' => 'decimal:2',
+        'stok' => 'integer',
     ];
 
     public function store()
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function approvedReviews()
+    {
+        return $this->reviews()->where('approved', true);
+    }
+
+    public function averageRating()
+    {
+        return $this->approvedReviews()->avg('rating') ?? 0;
     }
 }

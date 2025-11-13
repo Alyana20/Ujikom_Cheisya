@@ -28,6 +28,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // After login, redirect users to the intended page or the role-aware dashboard.
         return redirect()->intended(route('dashboard', absolute: false));
     }
 
